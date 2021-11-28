@@ -1,6 +1,6 @@
 use base64::basic::BasicEncoder;
 use base64::traits::Base64Encoder;
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Bencher};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId, Bencher, Throughput};
 use rand::{rngs::SmallRng, RngCore, SeedableRng};
 
 fn random_bytes(len: usize) -> Vec<u8> {
@@ -21,8 +21,9 @@ pub fn basic_encoder(b: &mut Bencher, &size: &usize) {
 
 fn bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("Encoder");
-    for i in [1024, 1024 * 256, 1024 * 1024 * 4] {
-        group.bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder);
+    for i in [1024, 1024 * 256, 1024 * 1024 * 4, 1024 * 1024 * 32] {
+        group.throughput(Throughput::Bytes(i as u64)) // show throughput
+            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder);
     }
 }
 
