@@ -32,6 +32,18 @@ macro_rules! gen_tests {
             fn basic_3() {
                 test_encode(& <$A>::new(), b"light wor", b"bGlnaHQgd29y");
             }
+            #[test]
+            fn shakespeare() {
+                test_encode(& <$A>::new(), b"To be, or not to be, that is the question:
+Whether 'tis nobler in the mind to suffer
+The slings and arrows of outrageous fortune,
+Or to take Arms against a Sea of troubles,
+And by opposing end them: to die, to sleep
+No more; and by a sleep, to say we end
+The heart-ache, and the thousand natural shocks
+That Flesh is heir to? 'Tis a consummation
+Devoutly to be wished.", b"VG8gYmUsIG9yIG5vdCB0byBiZSwgdGhhdCBpcyB0aGUgcXVlc3Rpb246CldoZXRoZXIgJ3RpcyBub2JsZXIgaW4gdGhlIG1pbmQgdG8gc3VmZmVyClRoZSBzbGluZ3MgYW5kIGFycm93cyBvZiBvdXRyYWdlb3VzIGZvcnR1bmUsCk9yIHRvIHRha2UgQXJtcyBhZ2FpbnN0IGEgU2VhIG9mIHRyb3VibGVzLApBbmQgYnkgb3Bwb3NpbmcgZW5kIHRoZW06IHRvIGRpZSwgdG8gc2xlZXAKTm8gbW9yZTsgYW5kIGJ5IGEgc2xlZXAsIHRvIHNheSB3ZSBlbmQKVGhlIGhlYXJ0LWFjaGUsIGFuZCB0aGUgdGhvdXNhbmQgbmF0dXJhbCBzaG9ja3MKVGhhdCBGbGVzaCBpcyBoZWlyIHRvPyAnVGlzIGEgY29uc3VtbWF0aW9uCkRldm91dGx5IHRvIGJlIHdpc2hlZC4=");
+            }
         }
     }
 }
