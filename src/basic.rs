@@ -12,7 +12,7 @@ const BASE64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123
 
 const UNROLL_SIZE: usize = 8;
 
-#[inline]
+#[inline(always)]
 fn encode_one(i: u8) -> u8 {
     return BASE64[i as usize];
 }
