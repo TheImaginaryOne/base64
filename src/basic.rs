@@ -8,25 +8,23 @@ impl BasicEncoder {
     }
 }
 
+const BASE64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+const UNROLL_SIZE: usize = 8;
+
+#[inline]
 fn encode_one(i: u8) -> u8 {
-    if i < 26 {
-        // range A-Z
-        i + 'A' as u8
-    } else if i >= 26 && i < 52 {
-        // range a-z
-        i + 'a' as u8 - 26
-    } else if i >= 52 && i < 62 {
-        // range 0-9
-        i + '0' as u8 - 52
-    } else if i == 62 {
-        // character plus
-        '+' as u8
-    } else if i == 63 {
-        // character slash
-        '/' as u8
-    } else {
-        unreachable!("Can only have 6 bits");
-    }
+    return BASE64[i as usize];
+}
+
+#[inline(always)]
+fn decode_chunk(input: &[u8], output: &mut [u8]) {
+    let (a, b, c) = (input[0], input[1], input[2]);
+
+    output[0] = encode_one(a >> 2);
+    output[1] = encode_one(((3 & a) << 4) | (b >> 4));
+    output[2] = encode_one(((15 & b) << 2) | (c >> 6));
+    output[3] = encode_one(c & 63);
 }
 
 impl Base64Encoder for BasicEncoder {
@@ -34,15 +32,21 @@ impl Base64Encoder for BasicEncoder {
         let n_groups = input.len() / 3;
         let n_remainder = input.len() % 3;
 
-        for i in 0..n_groups {
-            let (a, b, c) = (input[3 * i], input[3 * i + 1], input[3 * i + 2]);
-            let start = 4 * i;
+        // manual unroll?
+        let mut i = 0;
+        while i + UNROLL_SIZE < n_groups {
+            let chunk = &input[3 * i..3 * (i + UNROLL_SIZE)];
+            let chunk_out = &mut output[4 * i..4 * (i + UNROLL_SIZE)];
+            for j in 0..UNROLL_SIZE {
+                decode_chunk(&chunk[3 * j..3 * (j + 1)], &mut chunk_out[4 * j..4 * (j + 1)]);
+            }
 
-            output[start] = encode_one(a >> 2);
-            output[start + 1] = encode_one(((3 & a) << 4) | (b >> 4));
-            output[start + 2] = encode_one(((15 & b) << 2) | (c >> 6));
-            output[start + 3] = encode_one(c & 63);
+            i += UNROLL_SIZE;
         }
+        for i in ((n_groups / UNROLL_SIZE) * UNROLL_SIZE)..n_groups {
+            decode_chunk(&input[3 * i..3 * (i + 1)], &mut output[4 * i..4 * (i + 1)]);
+        };
+
         let remain_start = 4 * n_groups;
         // padding
         if n_remainder == 1 {
