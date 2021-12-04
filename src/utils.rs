@@ -6,7 +6,7 @@ pub fn encode_one(i: u8) -> u8 {
 }
 
 #[inline(always)]
-pub fn decode_chunk(input: &[u8], output: &mut [u8]) {
+pub fn encode_three_byte_chunk(input: &[u8], output: &mut [u8]) {
     let (a, b, c) = (input[0], input[1], input[2]);
 
     output[0] = encode_one(a >> 2);
@@ -19,7 +19,7 @@ pub fn decode_chunk(input: &[u8], output: &mut [u8]) {
 pub fn encode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) {
     let n_remaining_groups = remainder_input.len() / 3;
     for i in 0..n_remaining_groups {
-        decode_chunk(
+        encode_three_byte_chunk(
             &remainder_input[3 * i..3 * (i + 1)],
             &mut remainder_output[4 * i..4 * (i + 1)],
         );
