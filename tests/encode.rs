@@ -32,6 +32,15 @@ macro_rules! gen_tests {
             fn basic_3() {
                 test_encode(& <$A>::new(), b"light wor", b"bGlnaHQgd29y");
             }
+            // Subsequent tests test the fast implementation which converts 16 bytes at a time.
+            #[test]
+            fn ouch() {
+                test_encode(& <$A>::new(), b"ouch my foot hurts!", b"b3VjaCBteSBmb290IGh1cnRzIQ==");
+            }
+            #[test]
+            fn ouchhhh() {
+                test_encode(& <$A>::new(), b"ouch, my foot hurts! Someone, please help!!", b"b3VjaCwgbXkgZm9vdCBodXJ0cyEgU29tZW9uZSwgcGxlYXNlIGhlbHAhIQ==");
+            }
             #[test]
             fn shakespeare() {
                 test_encode(& <$A>::new(), b"To be, or not to be, that is the question:
@@ -49,4 +58,4 @@ Devoutly to be wished.", b"VG8gYmUsIG9yIG5vdCB0byBiZSwgdGhhdCBpcyB0aGUgcXVlc3Rpb
 }
 
 gen_tests!(basic_encoder_test, base64::basic::BasicEncoder);
-//gen_tests!(fast_encoder_test, base64::fast::FastEncoder);
+gen_tests!(fast_encoder_test, base64::fast::FastEncoder);
