@@ -92,7 +92,9 @@ unsafe fn sse_encode(input: &[u8], output: &mut [u8]) {
     let n_groups = input.len() / 12;
 
     let mut i = 0;
-    while i + UNROLL_SIZE <= n_groups {
+    // We don't want to read 12 bytes using a _mm_loadu_si128
+    // which actually reads 16 bytes and overflows the vector.
+    while i + UNROLL_SIZE + 1 <= n_groups {
         let chunk = &input[12 * i..12 * (i + UNROLL_SIZE)];
         let chunk_out = &mut output[16 * i..16 * (i + UNROLL_SIZE)];
         for j in 0..UNROLL_SIZE {
