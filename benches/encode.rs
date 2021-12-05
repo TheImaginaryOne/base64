@@ -31,12 +31,18 @@ pub fn fast_encoder(b: &mut Bencher, &size: &usize) {
 
 fn bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("Encoder");
-    for i in [1024, 1024 * 256, 1024 * 1024 * 4, 1024 * 1024 * 32] {
+    for i in [1024 * 1024 * 4, 1024 * 1024 * 32] {
         group
             .throughput(Throughput::Bytes(i as u64)) // show throughput
-            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder);
+            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder)
+            .bench_with_input(BenchmarkId::new("Fast", i), &i, fast_encoder);
+    }
+    for i in [1024 * 1024 * 128] {
         group
-            .throughput(Throughput::Bytes(i as u64)) // show throughput
+            .throughput(Throughput::Bytes(i as u64))
+            .sample_size(50)
+            .measurement_time(std::time::Duration::from_secs(10))
+            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder)
             .bench_with_input(BenchmarkId::new("Fast", i), &i, fast_encoder);
     }
 }
