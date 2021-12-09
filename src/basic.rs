@@ -1,4 +1,4 @@
-use crate::traits::Base64Encoder;
+use crate::traits::{Base64Encoder, Base64Decoder};
 use crate::utils::{encode_remainder, encode_three_byte_chunk};
 
 pub struct BasicEncoder {}
@@ -37,3 +37,22 @@ impl Base64Encoder for BasicEncoder {
         );
     }
 }
+
+pub struct BasicDecoder {}
+
+impl BasicDecoder {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Base64Decoder for BasicDecoder {
+    fn decode(&self, input: &[u8], output: &mut [u8]) -> Result<(), ()> {
+        if input.len() % 4 > 0 {
+            return Err(())
+        }
+        let n_groups = input.len() / 4;
+        Ok(())
+    }
+}
+
