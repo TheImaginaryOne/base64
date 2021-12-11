@@ -1,4 +1,4 @@
-use crate::traits::{Base64Decoder, Base64Encoder};
+use crate::interface::{Base64Decoder, Base64Encoder};
 use crate::utils::*;
 
 pub struct BasicEncoder {}

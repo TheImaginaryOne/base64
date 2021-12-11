@@ -1,4 +1,4 @@
-use crate::traits::Base64Encoder;
+use crate::interface::Base64Encoder;
 use crate::utils::encode_remainder;
 use core::arch::x86_64::*;
 

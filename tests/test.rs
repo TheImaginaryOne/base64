@@ -1,4 +1,4 @@
-use base64::traits::*;
+use base64::interface::*;
 
 fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8], expected_output: &[u8]) {
     let mut output_len = (input.len() / 4) * 3;

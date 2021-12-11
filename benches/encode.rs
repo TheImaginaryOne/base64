@@ -1,6 +1,6 @@
 use base64::basic::BasicEncoder;
 use base64::fast::FastEncoder;
-use base64::traits::Base64Encoder;
+use base64::interface::Base64Encoder;
 use criterion::{
     black_box, criterion_group, criterion_main, Bencher, BenchmarkId, Criterion, Throughput,
 };

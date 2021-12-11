@@ -4,5 +4,5 @@
 
 pub mod basic;
 pub mod fast;
-pub mod traits;
+pub mod interface;
 mod utils;
