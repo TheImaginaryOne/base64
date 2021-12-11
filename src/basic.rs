@@ -1,4 +1,4 @@
-use crate::interface::{Base64Decoder, Base64Encoder};
+use crate::interface::*;
 use crate::utils::*;
 
 pub struct BasicEncoder {}
@@ -47,9 +47,9 @@ impl BasicDecoder {
 }
 
 impl Base64Decoder for BasicDecoder {
-    fn decode(&self, input: &[u8], output: &mut [u8]) -> Result<(), ()> {
+    fn decode(&self, input: &[u8], output: &mut [u8]) -> Result<(), DecoderError> {
         if input.len() % 4 > 0 {
-            return Err(());
+            return Err(DecoderError::InvalidLength);
         }
         let n_groups = input.len() / 4;
         let mut i = 0;
@@ -61,7 +61,7 @@ impl Base64Decoder for BasicDecoder {
                 decode_four_byte_chunk(
                     &chunk[4 * j..4 * (j + 1)],
                     &mut chunk_out[3 * j..3 * (j + 1)],
-                )?;
+                ).map_err(|_| DecoderError::InvalidByte)?;
             }
 
             i += UNROLL_SIZE;
@@ -71,7 +71,7 @@ impl Base64Decoder for BasicDecoder {
         decode_remainder(
             &input[4 * remaining_start..],
             &mut output[3 * remaining_start..],
-        )?;
+        ).map_err(|_| DecoderError::InvalidByte)?;
         Ok(())
     }
 }

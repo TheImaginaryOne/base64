@@ -1,6 +1,6 @@
 use base64::interface::*;
 
-fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8], expected_output: &[u8]) {
+fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8]) -> Result<Vec<u8>, DecoderError> {
     let mut output_len = (input.len() / 4) * 3;
     if input.len() >= 1 && input[input.len() - 1] == b'=' {
         output_len -= 1;
@@ -10,8 +10,18 @@ fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8], expected_ou
     }
     let mut output = vec![0; output_len];
 
-    decoder.decode(&input, &mut output).unwrap();
+    decoder.decode(&input, &mut output)?;
+    Ok(output)
+}
+
+fn test_decode_helper<T: Base64Decoder>(decoder: &T, input: &[u8], expected_output: &[u8]) {
+    let output = test_decode_internal(decoder, input).unwrap();
     assert_eq!(expected_output, output);
+}
+
+fn test_decode_error_helper<T: Base64Decoder>(decoder: &T, input: &[u8], expected_error: DecoderError) {
+    let error = test_decode_internal(decoder, input).expect_err("Not an error");
+    assert_eq!(expected_error, error);
 }
 
 fn test_encode_internal<T: Base64Encoder>(encoder: &T, input: &[u8], expected_output: &[u8]) {
@@ -70,9 +80,28 @@ macro_rules! gen_tests {
 
             test_cases!(
                 fn test_decode(test_case: (&[u8], &[u8])) {
-                    test_decode_internal(&<$A>::new(), test_case.1, test_case.0);
+                    test_decode_helper(&<$A>::new(), test_case.1, test_case.0);
                 }
             );
+        }
+    };
+}
+
+macro_rules! gen_decoder_error_tests {
+    ($test_name:ident, $A:ty) => {
+        #[cfg(test)]
+        mod $test_name {
+            use super::*;
+            use parameterized::parameterized;
+
+            #[parameterized(test_case = {
+                (b"ab8Yux", DecoderError::InvalidLength),
+                (b"ab8Yx$Ea", DecoderError::InvalidByte),
+                (b"aM2JjM2QxNDUzYjUyZGQyZWFlZWNhM2E1YjEyNWNiMTFkZTNkYWQ0NDNjYTQzZTRiYzUxMjQzYzEzNWJhMjNjNGMxNDJhY2QxMmUyMWU1ZTNkNGQxMWVhMWRlYTNjZ8Yx$Ea", DecoderError::InvalidByte),
+            })]
+            fn test_decode_incorrect_length(test_case: (&[u8], DecoderError)) {
+                test_decode_error_helper(&<$A>::new(), test_case.0, test_case.1);
+            }
         }
     };
 }
@@ -81,4 +110,5 @@ gen_tests!(encode, basic_encoder_test, base64::basic::BasicEncoder);
 gen_tests!(encode, fast_encoder_test, base64::fast::FastEncoder);
 
 gen_tests!(decode, basic_decoder_test, base64::basic::BasicDecoder);
+gen_decoder_error_tests!(basic_decoder_error_test, base64::basic::BasicDecoder);
 //gen_tests!(decode, fast_decoder_test, base64::fast::FastDecoder);
