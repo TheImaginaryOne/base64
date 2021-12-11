@@ -2,7 +2,7 @@ use base64::basic::BasicEncoder;
 use base64::fast::FastEncoder;
 use base64::interface::Base64Encoder;
 use criterion::{
-    black_box, criterion_group, criterion_main, Bencher, BenchmarkId, Criterion, Throughput,
+    black_box, Bencher
 };
 use rand::{rngs::SmallRng, RngCore, SeedableRng};
 
@@ -28,24 +28,3 @@ pub fn fast_encoder(b: &mut Bencher, &size: &usize) {
     let encoder = FastEncoder::new();
     b.iter(|| encoder.encode(&input, black_box(&mut output)));
 }
-
-fn bench(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Encoder");
-    for i in [1024 * 1024 * 4, 1024 * 1024 * 32] {
-        group
-            .throughput(Throughput::Bytes(i as u64)) // show throughput
-            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder)
-            .bench_with_input(BenchmarkId::new("Fast", i), &i, fast_encoder);
-    }
-    for i in [1024 * 1024 * 128] {
-        group
-            .throughput(Throughput::Bytes(i as u64))
-            .sample_size(50)
-            .measurement_time(std::time::Duration::from_secs(10))
-            .bench_with_input(BenchmarkId::new("Basic", i), &i, basic_encoder)
-            .bench_with_input(BenchmarkId::new("Fast", i), &i, fast_encoder);
-    }
-}
-
-criterion_group!(benches, bench);
-criterion_main!(benches);
