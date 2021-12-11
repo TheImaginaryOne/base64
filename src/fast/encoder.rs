@@ -1,5 +1,5 @@
-use crate::interface::Base64Encoder;
-use crate::utils::encode_remainder;
+use crate::interface::*;
+use crate::utils::*;
 use core::arch::x86_64::*;
 
 pub struct FastEncoder {}
@@ -121,3 +121,4 @@ impl Base64Encoder for FastEncoder {
         }
     }
 }
+
