@@ -1,5 +1,20 @@
 const BASE64: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+const INVALID_VALUE: u8 = 0xff;
+const BASE64_DECODE: &[u8] = &generate_decode_table(BASE64);
+
+const fn generate_decode_table(encode_table: &[u8]) -> [u8; 256] {
+    let mut decode_table = [INVALID_VALUE; 256];
+    // Rust const fn does not support for loops
+    let mut i: u8 = 0;
+    while i < 64 {
+        let encoded = encode_table[i as usize];
+        decode_table[encoded as usize] = i;
+        i += 1;
+    }
+    decode_table
+}
+
 #[inline(always)]
 pub fn encode_one(i: u8) -> u8 {
     return BASE64[i as usize];
@@ -48,4 +63,66 @@ pub fn encode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) {
         output_tail[2] = encode_one((15 & b) << 2);
         output_tail[3] = '=' as u8;
     }
+}
+
+/// Decode a byte to 6 bits.
+#[inline(always)]
+fn decode_one(i: u8) -> Result<u8, ()> {
+    let x = BASE64_DECODE[i as usize];
+    if x < 255 {
+        Ok(x)
+    } else {
+        Err(())
+    }
+}
+
+#[inline(always)]
+pub fn decode_four_byte_chunk(input: &[u8], output: &mut [u8]) -> Result<(), ()> {
+    let (a, b, c, d) = (
+        decode_one(input[0])?,
+        decode_one(input[1])?,
+        decode_one(input[2])?,
+        decode_one(input[3])?,
+    );
+
+    output[0] = (a << 2) | (b >> 4);
+    output[1] = (b << 4) | (c >> 2);
+    output[2] = (c << 6) | d;
+    Ok(())
+}
+
+#[inline]
+pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> Result<(), ()> {
+    if remainder_input.len() < 4 {
+        return Ok(())
+    }
+
+    let n_remaining_groups = remainder_input.len() / 4;
+    for i in 0..n_remaining_groups - 1 {
+        decode_four_byte_chunk(
+            &remainder_input[4 * i..4 * (i + 1)],
+            &mut remainder_output[3 * i..3 * (i + 1)],
+        )?;
+    }
+
+    // Reserve last four bytes to handle equals signs
+    let remainder_group_start = n_remaining_groups - 1;
+
+    let input_tail = &remainder_input[4 * remainder_group_start..];
+    let output_tail = &mut remainder_output[3 * remainder_group_start..];
+    let a = decode_one(input_tail[0])?;
+    let b = decode_one(input_tail[1])?;
+    output_tail[0] = (a << 2) | (b >> 4);
+
+    // handle padding
+    if input_tail[2] != b'=' {
+        let c = decode_one(input_tail[2])?;
+        output_tail[1] = (b << 4) | (c >> 2);
+
+        if input_tail[3] != b'=' {
+            let d = decode_one(input_tail[3])?;
+            output_tail[2] = (c << 6) | d;
+        }
+    }
+    Ok(())
 }

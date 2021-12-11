@@ -1,7 +1,14 @@
 use base64::traits::*;
 
 fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8], expected_output: &[u8]) {
-    let mut output = vec![0; (input.len() / 4) * 3];
+    let mut output_len = (input.len() / 4) * 3;
+    if input.len() >= 1 && input[input.len() - 1] == b'=' {
+        output_len -= 1;
+        if input.len() >= 2 && input[input.len() - 2] == b'=' {
+            output_len -= 1;
+        }
+    }
+    let mut output = vec![0; output_len];
 
     decoder.decode(&input, &mut output).unwrap();
     assert_eq!(expected_output, output);

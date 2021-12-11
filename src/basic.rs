@@ -1,5 +1,5 @@
-use crate::traits::{Base64Encoder, Base64Decoder};
-use crate::utils::{encode_remainder, encode_three_byte_chunk};
+use crate::traits::{Base64Decoder, Base64Encoder};
+use crate::utils::*;
 
 pub struct BasicEncoder {}
 
@@ -49,10 +49,29 @@ impl BasicDecoder {
 impl Base64Decoder for BasicDecoder {
     fn decode(&self, input: &[u8], output: &mut [u8]) -> Result<(), ()> {
         if input.len() % 4 > 0 {
-            return Err(())
+            return Err(());
         }
         let n_groups = input.len() / 4;
+        let mut i = 0;
+        // Remainder chunk must not be empty because it may have padding bytes.
+        while i + UNROLL_SIZE + 1 <= n_groups {
+            let chunk = &input[4 * i..4 * (i + UNROLL_SIZE)];
+            let chunk_out = &mut output[3 * i..3 * (i + UNROLL_SIZE)];
+            for j in 0..UNROLL_SIZE {
+                decode_four_byte_chunk(
+                    &chunk[4 * j..4 * (j + 1)],
+                    &mut chunk_out[3 * j..3 * (j + 1)],
+                )?;
+            }
+
+            i += UNROLL_SIZE;
+        }
+
+        let remaining_start = (n_groups.saturating_sub(1) / UNROLL_SIZE) * UNROLL_SIZE;
+        decode_remainder(
+            &input[4 * remaining_start..],
+            &mut output[3 * remaining_start..],
+        )?;
         Ok(())
     }
 }
-
