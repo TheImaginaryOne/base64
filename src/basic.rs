@@ -17,7 +17,7 @@ impl Base64Encoder for BasicEncoder {
 
         // manual unroll?
         let mut i = 0;
-        while i + UNROLL_SIZE < n_groups {
+        while i + UNROLL_SIZE <= n_groups {
             let chunk = &input[3 * i..3 * (i + UNROLL_SIZE)];
             let chunk_out = &mut output[4 * i..4 * (i + UNROLL_SIZE)];
             for j in 0..UNROLL_SIZE {

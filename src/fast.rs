@@ -106,7 +106,7 @@ unsafe fn sse_encode(input: &[u8], output: &mut [u8]) {
         }
         i += UNROLL_SIZE;
     }
-    let remaining_start = (n_groups / UNROLL_SIZE) * UNROLL_SIZE;
+    let remaining_start = (n_groups.saturating_sub(1) / UNROLL_SIZE) * UNROLL_SIZE;
     encode_remainder(
         &input[12 * remaining_start..],
         &mut output[16 * remaining_start..],
