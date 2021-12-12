@@ -95,9 +95,11 @@ macro_rules! gen_decoder_error_tests {
             use parameterized::parameterized;
 
             #[parameterized(test_case = {
-                (b"ab8Yux", DecoderError::InvalidLength),
-                (b"ab8Yx$Ea", DecoderError::InvalidByte),
-                (b"aM2JjM2QxNDUzYjUyZGQyZWFlZWNhM2E1YjEyNWNiMTFkZTNkYWQ0NDNjYTQzZTRiYzUxMjQzYzEzNWJhMjNjNGMxNDJhY2QxMmUyMWU1ZTNkNGQxMWVhMWRlYTNjZ8Yx$Ea", DecoderError::InvalidByte),
+                (b"ab8Yux", DecoderError::InvalidLength(6)),
+                (b"$b8Yx$Ea", DecoderError::InvalidByte(0)),
+                (b"ab8Yx$Ea", DecoderError::InvalidByte(5)),
+                (b"ab8YxrE$", DecoderError::InvalidByte(7)),
+                (b"aM2JjM2QxNDUzYjUyZGQyZ$FlZWNhM2E1YjEyNWNiMTFkZTNkYWQ0NDNjYTQzZTRiYzUxMjQzYzEzNWJhMjNjNGMxNDJhY2QxMmUyMWU1ZTNkNGQxMWVhMWRlYTNjZ8Yx$Ea", DecoderError::InvalidByte(22)),
             })]
             fn test_decode_incorrect_length(test_case: (&[u8], DecoderError)) {
                 test_decode_error_helper(&<$A>::new(), test_case.0, test_case.1);

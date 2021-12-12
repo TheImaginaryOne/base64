@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Eq)]
 pub enum DecoderError {
-    InvalidLength,
-    InvalidByte
+    InvalidLength(usize),
+    InvalidByte(usize),
 }
 
 pub trait Base64Encoder {

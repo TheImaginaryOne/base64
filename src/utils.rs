@@ -77,12 +77,12 @@ fn decode_one(i: u8) -> Result<u8, ()> {
 }
 
 #[inline(always)]
-pub fn decode_four_byte_chunk(input: &[u8], output: &mut [u8]) -> Result<(), ()> {
+pub fn decode_four_byte_chunk(input: &[u8], output: &mut [u8]) -> Result<(), usize> {
     let (a, b, c, d) = (
-        decode_one(input[0])?,
-        decode_one(input[1])?,
-        decode_one(input[2])?,
-        decode_one(input[3])?,
+        decode_one(input[0]).map_err(|_| 0usize)?,
+        decode_one(input[1]).map_err(|_| 1usize)?,
+        decode_one(input[2]).map_err(|_| 2usize)?,
+        decode_one(input[3]).map_err(|_| 3usize)?,
     );
 
     output[0] = (a << 2) | (b >> 4);
@@ -92,7 +92,7 @@ pub fn decode_four_byte_chunk(input: &[u8], output: &mut [u8]) -> Result<(), ()>
 }
 
 #[inline]
-pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> Result<(), ()> {
+pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> Result<(), usize> {
     if remainder_input.len() < 4 {
         return Ok(())
     }
@@ -102,7 +102,7 @@ pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> 
         decode_four_byte_chunk(
             &remainder_input[4 * i..4 * (i + 1)],
             &mut remainder_output[3 * i..3 * (i + 1)],
-        )?;
+        ).map_err(|x| x + 4 * i)?;
     }
 
     // Reserve last four bytes to handle equals signs
@@ -110,17 +110,17 @@ pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> 
 
     let input_tail = &remainder_input[4 * remainder_group_start..];
     let output_tail = &mut remainder_output[3 * remainder_group_start..];
-    let a = decode_one(input_tail[0])?;
-    let b = decode_one(input_tail[1])?;
+    let a = decode_one(input_tail[0]).map_err(|_| 4 * remainder_group_start)?;
+    let b = decode_one(input_tail[1]).map_err(|_| 4 * remainder_group_start + 1)?;
     output_tail[0] = (a << 2) | (b >> 4);
 
     // handle padding
     if input_tail[2] != b'=' {
-        let c = decode_one(input_tail[2])?;
+        let c = decode_one(input_tail[2]).map_err(|_| 4 * remainder_group_start + 2)?;
         output_tail[1] = (b << 4) | (c >> 2);
 
         if input_tail[3] != b'=' {
-            let d = decode_one(input_tail[3])?;
+            let d = decode_one(input_tail[3]).map_err(|_| 4 * remainder_group_start + 3)?;
             output_tail[2] = (c << 6) | d;
         }
     }
