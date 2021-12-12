@@ -1,9 +1,7 @@
 use base64::basic::BasicEncoder;
 use base64::fast::FastEncoder;
 use base64::interface::Base64Encoder;
-use criterion::{
-    black_box, Bencher
-};
+use criterion::{black_box, Bencher};
 use rand::{rngs::SmallRng, RngCore, SeedableRng};
 
 fn random_bytes(len: usize) -> Vec<u8> {

@@ -11,4 +11,3 @@ pub trait Base64Encoder {
 pub trait Base64Decoder {
     fn decode(&self, buffer: &[u8], output: &mut [u8]) -> Result<(), DecoderError>;
 }
-

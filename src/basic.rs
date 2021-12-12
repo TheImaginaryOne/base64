@@ -61,7 +61,8 @@ impl Base64Decoder for BasicDecoder {
                 decode_four_byte_chunk(
                     &chunk[4 * j..4 * (j + 1)],
                     &mut chunk_out[3 * j..3 * (j + 1)],
-                ).map_err(|k| DecoderError::InvalidByte(k + 4 * j + 4 * i))?;
+                )
+                .map_err(|k| DecoderError::InvalidByte(k + 4 * j + 4 * i))?;
             }
 
             i += UNROLL_SIZE;
@@ -71,7 +72,8 @@ impl Base64Decoder for BasicDecoder {
         decode_remainder(
             &input[4 * remaining_start..],
             &mut output[3 * remaining_start..],
-        ).map_err(|k| DecoderError::InvalidByte(k + 4 * remaining_start))?;
+        )
+        .map_err(|k| DecoderError::InvalidByte(k + 4 * remaining_start))?;
         Ok(())
     }
 }

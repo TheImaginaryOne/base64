@@ -121,4 +121,3 @@ impl Base64Encoder for FastEncoder {
         }
     }
 }
-

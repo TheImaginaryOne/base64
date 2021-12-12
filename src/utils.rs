@@ -94,7 +94,7 @@ pub fn decode_four_byte_chunk(input: &[u8], output: &mut [u8]) -> Result<(), usi
 #[inline]
 pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> Result<(), usize> {
     if remainder_input.len() < 4 {
-        return Ok(())
+        return Ok(());
     }
 
     let n_remaining_groups = remainder_input.len() / 4;
@@ -102,7 +102,8 @@ pub fn decode_remainder(remainder_input: &[u8], remainder_output: &mut [u8]) -> 
         decode_four_byte_chunk(
             &remainder_input[4 * i..4 * (i + 1)],
             &mut remainder_output[3 * i..3 * (i + 1)],
-        ).map_err(|x| x + 4 * i)?;
+        )
+        .map_err(|x| x + 4 * i)?;
     }
 
     // Reserve last four bytes to handle equals signs

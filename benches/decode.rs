@@ -21,4 +21,3 @@ pub fn basic_decoder(b: &mut Bencher, &size: &usize) {
     let decoder = BasicDecoder::new();
     b.iter(|| decoder.decode(&input, black_box(&mut output)));
 }
-

@@ -1,6 +1,9 @@
 use base64::interface::*;
 
-fn test_decode_internal<T: Base64Decoder>(decoder: &T, input: &[u8]) -> Result<Vec<u8>, DecoderError> {
+fn test_decode_internal<T: Base64Decoder>(
+    decoder: &T,
+    input: &[u8],
+) -> Result<Vec<u8>, DecoderError> {
     let mut output_len = (input.len() / 4) * 3;
     if input.len() >= 1 && input[input.len() - 1] == b'=' {
         output_len -= 1;
@@ -19,7 +22,11 @@ fn test_decode_helper<T: Base64Decoder>(decoder: &T, input: &[u8], expected_outp
     assert_eq!(expected_output, output);
 }
 
-fn test_decode_error_helper<T: Base64Decoder>(decoder: &T, input: &[u8], expected_error: DecoderError) {
+fn test_decode_error_helper<T: Base64Decoder>(
+    decoder: &T,
+    input: &[u8],
+    expected_error: DecoderError,
+) {
     let error = test_decode_internal(decoder, input).expect_err("Not an error");
     assert_eq!(expected_error, error);
 }
